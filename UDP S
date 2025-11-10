@@ -1,0 +1,34 @@
+import socket
+
+def start_server():
+    # Step 1: Create UDP socket
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    # Step 2: Bind server to localhost and port 5001
+    server_socket.bind(('0.0.0.0', 5001))
+    print("UDP Server is up and listening on port 5001...")
+
+    # Step 3: Receive file name from client
+    filename, client_addr = server_socket.recvfrom(1024)
+    filename = filename.decode()
+    print(f"Receiving file: {filename} from {client_addr}")
+
+    # Step 4: Open file to write received data
+    with open("received_" + filename, 'wb') as f:
+        while True:
+            data, addr = server_socket.recvfrom(4096)
+            if data == b'EOF':  # End Of File marker
+                break
+            f.write(data)
+
+    print(f"File '{filename}' received successfully and saved as 'received_{filename}'")
+
+    # Step 5: Send confirmation to client
+    server_socket.sendto(b"File received successfully.", client_addr)
+
+    # Close the socket
+    server_socket.close()
+
+
+if __name__ == "__main__":
+    start_server()
